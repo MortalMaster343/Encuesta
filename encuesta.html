@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Encuesta — Plantilla completa (Sistemas)</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root{
+      --card-bg:#ffffff;
+      --muted:#6b7280;
+    }
+    body { background:#f3f6fb; font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; padding:20px; }
+    .container-main { max-width:1200px; margin:0 auto; }
+    .card-main { background: var(--card-bg); border-radius:10px; box-shadow: 0 8px 30px rgba(20,30,70,0.06); padding:18px; }
+    h1 { font-size:1.4rem; margin-bottom:0.2rem; }
+    .subtitle { color:var(--muted); font-size:.92rem; margin-bottom:8px; }
+    .plantilla-wrap { position: relative; border:1px solid #e6edf6; border-radius:6px; overflow:visible; background:#fff; padding:8px; }
+    .plantilla-img { width:100%; height:auto; display:block; border-radius:4px; }
+    .pin {
+      position: absolute;
+      transform: translate(-50%,-50%);
+      background: rgba(255,255,255,0.98);
+      border: 1px solid #cbd5e1;
+      padding:6px;
+      border-radius:8px;
+      min-width:170px;
+      z-index: 12;
+      box-shadow: 0 6px 16px rgba(12,38,63,0.06);
+      font-size:13px;
+    }
+    .pin .title { font-weight:600; font-size:12px; margin-bottom:4px; }
+    .status-buttons .btn { font-size:12px; padding:.15rem .5rem; }
+    .s-reprobado { background:#fff5f5; border-color:#ffb3b3 !important; }
+    .s-especial { background:#fffbe6; border-color:#ffd24d !important; }
+    .s-cursar { background:#edfff0; border-color:#8fd48f !important; }
+    .s-cursada { background:#eef7ff; border-color:#7fb8ff !important; }
+    .legend { display:flex; gap:.5rem; align-items:center; margin-bottom:6px; }
+    .legend span { display:inline-block; padding:.25rem .5rem; border-radius:4px; font-size:12px; border:1px solid #d1d5db; }
+    .controls-row { display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; }
+    .small-muted { color:var(--muted); font-size:.88rem; }
+    .top-bar { display:flex; gap:12px; align-items:center; justify-content:space-between; margin-bottom:12px; }
+    .note { font-size:.9rem; color:#334155; }
+    @media (max-width:900px) {
+      .pin { min-width:140px; font-size:12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container-main">
+    <div class="card-main">
+      <div class="top-bar">
+        <div>
+          <h1>Encuesta: Plantilla — Ingeniería en Sistemas Computacionales</h1>
+          <div class="subtitle">Marca el estado de cada materia: <span class="small-muted">Reprobado / Especial / A cursar / Cursada</span></div>
+        </div>
+        <div class="text-end small-muted">
+          <div>Identificación por número de control — solo una respuesta permitida</div>
+        </div>
+      </div>
+
+      <form id="encuestaForm" autocomplete="off">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-5">
+            <label class="form-label">Nombre completo <span class="text-danger">*</span></label>
+            <input name="nombre" id="nombre" class="form-control" placeholder="Ej. Ana López" required />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Número de control <span class="text-danger">*</span></label>
+            <input name="numero_control" id="numero_control" class="form-control" placeholder="Ej. 20530013" required />
+            <div class="form-text small-muted">Con este número podrás responder una sola vez para esta plantilla.</div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Especialidad</label>
+            <select id="selectEspecialidad" class="form-select" disabled>
+              <option value="sistemas" selected>Ingeniería en Sistemas Computacionales</option>
+            </select>
+          </div>
+        </div>
+
+        <hr />
+
+        <div class="row">
+          <div class="col-lg-9">
+            <div class="plantilla-wrap" id="plantillaWrap">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                  <strong id="plantillaTitle">Ingeniería en Sistemas Computacionales</strong>
+                  <div class="small-muted">Plantilla: sistemas</div>
+                </div>
+                <div class="legend">
+                  <span class="s-reprobado">Reprobado</span>
+                  <span class="s-especial">Especial</span>
+                  <span class="s-cursar">A cursar</span>
+                  <span class="s-cursada">Cursada</span>
+                </div>
+              </div>
+
+              <!-- imagen plantilla: ruta local (se transformará a URL en tu entorno) -->
+              <img id="plantillaImg" class="plantilla-img" src="/mnt/data/db150101-c401-41b9-83d5-21669d954ba1.png" alt="Plantilla Sistemas" />
+
+              <!-- contenedor de pins -->
+              <div id="pinsContainer"></div>
+            </div>
+          </div>
+
+          <div class="col-lg-3">
+            <div class="card p-3 mb-3" style="border:1px solid #eef2ff;">
+              <div class="fw-semibold mb-2">Acciones</div>
+              <div class="d-grid gap-2">
+                <button type="button" id="exportBtn" class="btn btn-outline-secondary">Exportar JSON</button>
+                <button type="submit" id="saveBtn" class="btn btn-primary">Guardar respuesta</button>
+                <button type="button" id="resetBtn" class="btn btn-light">Resetear selecciones</button>
+              </div>
+            </div>
+
+            <div class="card p-3" style="border:1px solid #f1f5f9;">
+              <div class="fw-semibold mb-2">Estado</div>
+              <div id="statusBox" class="small-muted">Sin acciones</div>
+              <hr />
+              <div class="fw-semibold mb-2">Leyenda rápida</div>
+              <div class="small-muted">Marca <b>Reprobado</b> si la materia está reprobada; <b>Especial</b> si aplica un régimen especial; <b>A cursar</b> si la materia la cursarás en el próximo periodo; <b>Cursada</b> si ya la aprobaste.</div>
+            </div>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+<script>
+/* PÁGINA COMPLETA — Plantilla 'sistemas' incrustada */
+const plantilla = {
+  clave: 'sistemas',
+  nombre: 'Ingeniería en Sistemas Computacionales',
+  imagen: '/mnt/data/db150101-c401-41b9-83d5-21669d954ba1.png',
+  materias: [
+    {"id":"calc_diff","codigo":"ACF-0901","nombre":"Cálculo Diferencial","x":5,"y":5},
+    {"id":"calc_int","codigo":"ACF-0902","nombre":"Cálculo Integral","x":26,"y":8},
+    {"id":"calc_vec","codigo":"ACF-0904","nombre":"Cálculo Vectorial","x":44,"y":8},
+    {"id":"ecuaciones","codigo":"ACF-0905","nombre":"Ecuaciones Diferenciales","x":60,"y":8},
+  //  {"id":"graf","codigo":"SCC-1010","nombre":"Graficación","x":80,"y":8},
+   // {"id":"prog_fund","codigo":"AED-1285","nombre":"Fundamentos de Programación","x":8,"y":24},
+ //   {"id":"poo","codigo":"AED-1286","nombre":"Programación Orientada a Objetos","x":26,"y":24},
+  //  {"id":"estruct_datos","codigo":"AED-1026","nombre":"Estructura de Datos","x":44,"y":22},
+  //  {"id":"metodos_num","codigo":"SCC-1017","nombre":"Métodos Numéricos","x":60,"y":22},
+  //  {"id":"fund_tel","codigo":"AEC-1034","nombre":"Fundamentos Telecomunicaciones","x":80,"y":22},
+  //  {"id":"redes","codigo":"SCD-1021","nombre":"Redes de Computadoras","x":58,"y":18},
+/   // {"id":"ingen_software","codigo":"SCD-1011","nombre":"Ingeniería de Software","x":62,"y":38},
+    // Ajusta/añade más materias si quieres; las coordenadas son porcentajes (x,y)
+  ]
+};
+
+const estadosPermitidos = ['reprobado','especial','a_cursar','cursada'];
+
+const pinsContainer = document.getElementById('pinsContainer');
+const plantillaImg = document.getElementById('plantillaImg');
+const plantillaTitle = document.getElementById('plantillaTitle');
+const nombreInput = document.getElementById('nombre');
+const numeroInput = document.getElementById('numero_control');
+const exportBtn = document.getElementById('exportBtn');
+const resetBtn = document.getElementById('resetBtn');
+const statusBox = document.getElementById('statusBox');
+const saveBtn = document.getElementById('saveBtn');
+const encuestaForm = document.getElementById('encuestaForm');
+
+let estadoMaterias = {}; // {id: 'reprobado'|'especial'|...}
+let checkTimeout = null;
+
+// inicializar
+function init() {
+  plantillaTitle.textContent = plantilla.nombre;
+  plantillaImg.src = plantilla.imagen;
+  renderPins();
+  // Si hay querystring con nombre/numero/plantilla, precargar
+  const urlp = new URLSearchParams(window.location.search);
+  if (urlp.get('nombre')) nombreInput.value = urlp.get('nombre');
+  if (urlp.get('numero_control')) numeroInput.value = urlp.get('numero_control');
+  // verificar si ya existe entrada si el usuario escribió numero y plantilla
+  numeroInput.addEventListener('blur', () => {
+    const n = numeroInput.value.trim();
+    if (!n) return;
+    checkIfSubmitted(n, plantilla.clave);
+  });
+  // botón reset
+  resetBtn.addEventListener('click', () => {
+    if (!confirm('¿Resetear todas las selecciones?')) return;
+    estadoMaterias = {};
+    document.querySelectorAll('.pin').forEach(p => p.classList.remove('s-reprobado','s-especial','s-cursar','s-cursada'));
+    statusBox.textContent = 'Selecciones reseteadas';
+  });
+
+  exportBtn.addEventListener('click', () => {
+    const payload = buildPayload();
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `${payload.numero_control || 'alumno'}_${plantilla.clave}.json`;
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  });
+
+  encuestaForm.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    await submitForm();
+  });
+}
+
+// crea los pins sobre la imagen
+function renderPins(){
+  pinsContainer.innerHTML = '';
+  estadoMaterias = {};
+  const wrapRect = document.getElementById('plantillaWrap').getBoundingClientRect();
+  plantilla.materias.forEach(m => {
+    estadoMaterias[m.id] = 'none';
+    const d = document.createElement('div');
+    d.className = 'pin';
+    d.style.left = m.x + '%';
+    d.style.top = m.y + '%';
+    d.dataset.mid = m.id;
+    d.innerHTML = `
+      <div class="title">${m.codigo} — ${m.nombre}</div>
+      <div class="status-buttons d-flex gap-1 mt-1">
+        <button data-id="${m.id}" data-estado="reprobado" class="btn btn-sm btn-outline-danger">Reprobado</button>
+        <button data-id="${m.id}" data-estado="especial" class="btn btn-sm btn-outline-warning">Especial</button>
+        <button data-id="${m.id}" data-estado="a_cursar" class="btn btn-sm btn-outline-success">A cursar</button>
+        <button data-id="${m.id}" data-estado="cursada" class="btn btn-sm btn-outline-primary">Cursada</button>
+      </div>
+    `;
+    pinsContainer.appendChild(d);
+
+    d.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', (ev) => {
+        const id = btn.dataset.id;
+        const est = btn.dataset.estado;
+        setEstadoForPin(id, est);
+      });
+    });
+  });
+}
+
+// aplicar estado visual y guardar en estadoMaterias
+function setEstadoForPin(id, est) {
+  if (!estadosPermitidos.includes(est)) return;
+  estadoMaterias[id] = est;
+  // buscar pin
+  const pin = document.querySelector(`.pin[data-mid="${id}"]`);
+  if (!pin) return;
+  pin.classList.remove('s-reprobado','s-especial','s-cursar','s-cursada');
+  if (est === 'reprobado') pin.classList.add('s-reprobado');
+  if (est === 'especial') pin.classList.add('s-especial');
+  if (est === 'a_cursar') pin.classList.add('s-cursar');
+  if (est === 'cursada') pin.classList.add('s-cursada');
+  statusBox.textContent = `Materia ${id} marcada como "${est.replace('_',' ')}"`;
+}
+
+// construir payload para enviar/exportar
+function buildPayload() {
+  const nombre = (document.getElementById('nombre').value || '').trim();
+  const numero = (document.getElementById('numero_control').value || '').trim();
+  return {
+    nombre,
+    numero_control: numero,
+    plantilla: plantilla.clave,
+    materias: plantilla.materias.map(m => ({
+      id: m.id, codigo: m.codigo, nombre: m.nombre, estado: estadoMaterias[m.id] || 'none'
+    }))
+  };
+}
+
+// Verificar si ya respondió (consulta check_submission.php)
+async function checkIfSubmitted(numero, plantillaClave) {
+  try {
+    const res = await fetch(`/check_submission.php?numero=${encodeURIComponent(numero)}&plantilla=${encodeURIComponent(plantillaClave)}`);
+    if (!res.ok) throw new Error('network');
+    const j = await res.json();
+    if (!j.ok) {
+      statusBox.textContent = 'No fue posible verificar duplicados: ' + (j.error || 'error');
+      return {ok:false, exists:false};
+    }
+    if (j.exists) {
+      statusBox.innerHTML = `<span style="color:#b45309">Este número de control <b>ya</b> respondió esta plantilla. No se permite enviar otra vez.</span>`;
+      saveBtn.disabled = true;
+      return {ok:true, exists:true};
+    } else {
+      statusBox.textContent = 'No hay respuesta previa — puedes enviar.';
+      saveBtn.disabled = false;
+      return {ok:true, exists:false};
+    }
+  } catch (err) {
+    statusBox.textContent = 'Error de red al verificar duplicados. Intenta más tarde.';
+    saveBtn.disabled = false;
+    return {ok:false, exists:false};
+  }
+}
+
+// enviar al servidor (save.php) — espera JSON y devuelve {ok:true}
+async function submitForm() {
+  const payload = buildPayload();
+  if (!payload.nombre || !payload.numero_control) {
+    alert('Completa tu nombre y número de control.');
+    return;
+  }
+
+  // comprobar duplicado localmente antes de enviar
+  const chk = await checkIfSubmitted(payload.numero_control, plantilla.clave);
+  if (chk.exists) return alert('Ya existe una respuesta registrada para este número de control y plantilla.');
+
+  try {
+    const res = await fetch('/save.php', {
+      method:'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const j = await res.json();
+    if (j.ok) {
+      alert('Respuesta guardada correctamente. ¡Gracias!');
+      saveBtn.disabled = true;
+      statusBox.textContent = 'Respuesta guardada en el servidor.';
+    } else {
+      if (j.error === 'already_submitted') {
+        alert('Ya existe una respuesta para este número de control (protección anti-duplicados).');
+        saveBtn.disabled = true;
+      } else {
+        alert('Error al guardar: ' + (j.message || j.error || 'desconocido'));
+      }
+    }
+  } catch (err) {
+    alert('Error de red al guardar: ' + err.message);
+  }
+}
+
+// inicializar la página
+init();
+
+</script>
+</body>
+</html>
